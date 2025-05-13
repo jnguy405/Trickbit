@@ -1,0 +1,57 @@
+class Load extends Phaser.Scene {
+    constructor() {
+        super("loadScene");
+    }
+
+    preload() {
+        this.load.setPath("./assets/");
+
+        // Load character tiles
+        this.load.setPath("./assets/");
+        this.load.image("tile_0240.png", "tile_0240.png");
+        this.load.image("tile_0241.png", "tile_0241.png");
+        this.load.image("tile_0242.png", "tile_0242.png");
+        this.load.image("tile_0243.png", "tile_0243.png");
+        this.load.image("tile_0244.png", "tile_0244.png");
+        this.load.image("tile_0245.png", "tile_0245.png");
+        this.load.image("tile_0246.png", "tile_0246.png");
+
+        // Load tilemap information
+        this.load.image("tilemap_tiles", "monochrome_tilemap_packed.png");                         // Packed tilemap
+        this.load.tilemapTiledJSON("Trickbit-level-1", "Trickbit-level-1.tmj");   // Tilemap in JSON
+    }
+
+    create() {
+        this.anims.create({
+            key: 'walk',
+            frames: [
+                { key: "tile_0241.png" },
+                { key: "tile_0242.png" },
+                { key: "tile_0243.png" },
+            ],
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'idle',
+            frames: [
+                { key: "tile_0240.png" }
+            ],
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'jump',
+            frames: [
+                { key: "tile_0244.png" }
+            ]
+        });
+         // ...and pass to the next Scene
+         this.scene.start("trickbitScene");
+    }
+
+    // Never get here since a new scene is started in create()
+    update() {
+    }
+}

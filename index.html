@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trickbit</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: left;
+            align-items: center;
+            height: 100vh;
+            overflow: visible;
+            background-color: #000; /* Optional: adds a background around the game */
+        }
+        #phaser-game {
+            display: inline-block; /* Makes the div only as wide as its contents */
+        }
+    </style>
+    <script src="./lib/phaser.js"></script>
+    <script src="./src/Scenes/Load.js"></script>
+    <script src="./src/Scenes/Trickbit.js"></script>
+    <script src="./src/main.js"></script>
+</head>
+<body>
+    <div id="phaser-game"></div>
+    <span id="description"></span>
+</body>
+</html>
