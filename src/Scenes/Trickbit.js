@@ -4,11 +4,15 @@ class Trickbit extends Phaser.Scene {
     }
 
     init() {
-        // variables and settings
-        this.ACCELERATION = 300;
-        this.DRAG = 1000;    // DRAG < ACCELERATION = icy slide
-        this.physics.world.gravity.y = 1500;
-        this.JUMP_VELOCITY = -800;
+        // Update your physics variables with the new parameters
+        this.ACCELERATION = 4 * 100;      // Acceleration -10 (scaled up for Phaser's physics)
+        this.MAX_SPEED = 3 * 100;          // Max Speed -7
+        this.DECELERATION = 100 * 100;              // Deceleration -30
+        this.JUMP_HEIGHT = -3 * 200;     // Jump Height -3 (negative because up is negative in screen coordinates)
+        this.DOWN_GRAVITY = 2 * 1000;    // Down Gravity -2.5
+        this.physics.world.gravity.y = this.DOWN_GRAVITY;
+        this.AIR_ACCELERATION = this.ACCELERATION * 0.5; // Half or less
+        this.AIR_DECELERATION = this.DECELERATION * 0.5; // Half or less
     }
 
     create() {
@@ -57,33 +61,39 @@ class Trickbit extends Phaser.Scene {
     }
 
     update() {
-        if(cursors.left.isDown) {
-            // TODO: have the player accelerate to the left
-            my.sprite.player.body.setAccelerationX(-this.ACCELERATION);
-            my.sprite.player.resetFlip();
-            my.sprite.player.anims.play('walk', true);
+    // Handle left/right movement with max speed
+        let onGround = my.sprite.player.body.blocked.down;
+        let currentAcceleration = onGround ? this.ACCELERATION : this.AIR_ACCELERATION;
+        let currentDeceleration = onGround ? this.DECELERATION : this.AIR_DECELERATION;
 
-        } else if(cursors.right.isDown) {
-            // TODO: have the player accelerate to the right
-            my.sprite.player.body.setAccelerationX(this.ACCELERATION);
+        if (cursors.left.isDown) {
+            my.sprite.player.body.setAccelerationX(-currentAcceleration);
             my.sprite.player.setFlip(true, false);
             my.sprite.player.anims.play('walk', true);
-
+            if (my.sprite.player.body.velocity.x < -this.MAX_SPEED) {
+                my.sprite.player.body.velocity.x = -this.MAX_SPEED;
+            }
+        } else if (cursors.right.isDown) {
+            my.sprite.player.body.setAccelerationX(currentAcceleration);
+            my.sprite.player.resetFlip();
+            my.sprite.player.anims.play('walk', true);
+            if (my.sprite.player.body.velocity.x > this.MAX_SPEED) {
+                my.sprite.player.body.velocity.x = this.MAX_SPEED;
+            }
         } else {
-            // TODO: set acceleration to 0 and have DRAG take over
             my.sprite.player.body.setAccelerationX(0);
-            my.sprite.player.body.setDragX(this.DRAG);
-            my.sprite.player.anims.play('idle');
+            my.sprite.player.body.setDragX(currentDeceleration);
+            if (onGround) {
+                my.sprite.player.anims.play('idle');
+            }
         }
 
-        // player jump
-        // note that we need body.blocked rather than body.touching b/c the former applies to tilemap tiles and the latter to the "ground"
+        // Jump handling
         if(!my.sprite.player.body.blocked.down) {
             my.sprite.player.anims.play('jump');
         }
         if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-            // TODO: set a Y velocity to have the player "jump" upwards (negative Y direction)
-            my.sprite.player.body.setVelocityY(this.JUMP_VELOCITY);
+            my.sprite.player.body.setVelocityY(this.JUMP_HEIGHT);
         }
     }
 }
