@@ -4,19 +4,18 @@ class Trickbit extends Phaser.Scene {
     }
 
     init() {
-        // Update your physics variables with the new parameters
-        this.ACCELERATION = 4 * 100;      // Acceleration -10 (scaled up for Phaser's physics)
-        this.MAX_SPEED = 2 * 100;          // Max Speed -7
-        this.DECELERATION = 100 * 100;              // Deceleration -30
-        this.JUMP_HEIGHT = -3 * 200;     // Jump Height -3 (negative because up is negative in screen coordinates)
-        this.DOWN_GRAVITY = 2 * 1000;    // Down Gravity -2.5
+        this.ACCELERATION = 4 * 100;    
+        this.MAX_SPEED = 2 * 100;         
+        this.DECELERATION = 100 * 100;    
+        this.JUMP_HEIGHT = -3 * 200;  
+        this.DOWN_GRAVITY = 2 * 1000;    
         this.physics.world.gravity.y = this.DOWN_GRAVITY;
         this.AIR_ACCELERATION = this.ACCELERATION * 0.5; 
         this.AIR_DECELERATION = this.DECELERATION * 2; 
     }
 
     create() {
-        // Create a new tilemap game object which uses 18x18 pixel tiles, and is
+        // 16x16 tiles 160W 32H
         this.map = this.add.tilemap("Trickbit-level-1", 16, 16, 160, 32);
 
         // Add a tileset to the map
