@@ -17,8 +17,13 @@ class Load extends Phaser.Scene {
         this.load.image("tile_0246.png", "tile_0246.png");
 
         // Load tilemap information
-        this.load.image("tilemap_tiles", "monochrome_tilemap_packed.png");                         // Packed tilemap
-        this.load.tilemapTiledJSON("Trickbit-level-1", "Trickbit-level-1.tmj");   // Tilemap in JSON
+        this.load.image("tilemap_tiles", "monochrome_tilemap_packed.png");          // Packed tilemap
+        this.load.tilemapTiledJSON("Trickbit-level-1", "Trickbit-level-1.tmj");     // Tilemap in JSON
+        this.load.spritesheet("tilemap_sheet", "monochrome_tilemap_packed.png", {
+            frameWidth: 16,
+            frameHeight: 16
+        });
+        this.load.multiatlas("kenny-particles", "kenny-particles.json");
     }
 
     create() {
@@ -51,7 +56,6 @@ class Load extends Phaser.Scene {
          this.scene.start("trickbitScene");
     }
 
-    // Never get here since a new scene is started in create()
     update() {
     }
 }
