@@ -10,32 +10,31 @@
 // https://kenney.nl/assets/shape-characters
 
 // debug with extreme prejudice
-"use strict"
+"use strict";
 
-// game config
 let config = {
+    type: Phaser.AUTO,
     parent: 'phaser-game',
-    type: Phaser.CANVAS,
-    render: {
-        pixelArt: true  // prevent pixel art from getting blurred when scaled
-    },
+    width: 5120,
+    height: 1024,
     physics: {
-        default: 'arcade',  
+        default: 'arcade',
         arcade: {
             debug: true,
-            gravity: {
-                x: 0,
-                y: 0
-            }
         }
     },
-    width: 3840,
-    height: 768,
+    render: {
+        pixelArt: true,
+    },
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH
+    },
     scene: [Load, Trickbit]
-}
+};
 
+const SCALE = 2.0;  
 var cursors;
-const SCALE = 2;
-var my = {sprite: {}, text: {}};
+var my = { sprite: {}, text: {} };
 
 const game = new Phaser.Game(config);
