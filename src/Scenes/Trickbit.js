@@ -40,7 +40,7 @@ class Trickbit extends Phaser.Scene {
         this.offsetLerpSpeed = 0.01; 
 
         // Tile Bias for spike collision idk i picked a random high number and it works
-        this.physics.world.TILE_BIAS = 24;
+        this.physics.world.TILE_BIAS = 40;
 
         this.lastStepX = 0;          // Tracks the last X position where a step sound played
         this.stepDistance = 64;      // Play sound every 32 pixels
