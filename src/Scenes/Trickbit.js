@@ -40,7 +40,10 @@ class Trickbit extends Phaser.Scene {
         this.offsetLerpSpeed = 0.01; 
 
         // Tile Bias for spike collision idk i picked a random high number and it works
-        this.physics.world.TILE_BIAS = 40;
+        this.physics.world.TILE_BIAS = 24;
+
+        this.lastStepX = 0;          // Tracks the last X position where a step sound played
+        this.stepDistance = 64;      // Play sound every 32 pixels
     }
 
     preload() {
@@ -113,21 +116,35 @@ class Trickbit extends Phaser.Scene {
             scale: {start: 0.01, end: 0.05, random: true},
             lifespan: 300, maxAliveParticles: 6,
             alpha: {start: 1, end: 0.1, gravityY: -400},
-        })
-
+        });
         this.walking.stop();
+
+        // Player Jumping Particles
+        this.jumping = this.add.particles(0, 0, 'kenny-particles', {
+            frame: ['twirl_01.png', 'twirl_02.png'],
+            scale: { start: 0.01, end: 0.1 },
+            lifespan: 500,  
+            maxAliveParticles: 2,
+            alpha: { start: 1, end: 0 },
+            gravityY: 100,  
+            speed: { min: 50, max: 100 },
+            angle: { min: -85, max: -95 },  
+            emitZone: { source: new Phaser.Geom.Rectangle(-10, 0, 20, 10) }  
+        });
+        this.jumping.stop();
 
         // Collision handling
         this.physics.add.collider(my.sprite.player, this.baseLayer);
 
         this.physics.add.collider(my.sprite.player, this.deathLayer, () => {
-            // Restart the scene when player dies
+            this.sound.play('deaddd', {volume: 0.5});
             this.scene.restart();
         });
 
         this.keyCollected = false;
         // Collect key when player comes in contact
         this.physics.add.overlap(my.sprite.player, this.keyobj, (obj1, obj2) => {
+            this.sound.play('keyyy', {volume: 0.3});
             obj2.destroy();
             this.keyCollected = true;
         });
@@ -170,10 +187,10 @@ class Trickbit extends Phaser.Scene {
         this.chestBurst = this.add.particles(0, 0, 'kenny-particles', {
             frame: ['star_08.png'],
             lifespan: 200,
-            speed: {min: 20, max: 80},
+            speed: {min: 45, max: 80},
             angle: {min: 0, max: 360},
             quantity: 6,
-            scale: {start: 0.1, end: 0.0},
+            scale: {start: 0.05, end: 0.0},
             alpha: {start: 1, end: 0},
             rotate: {min: 0, max: 135},
         });
@@ -187,6 +204,7 @@ class Trickbit extends Phaser.Scene {
                 chest.setTexture("tilemap_sheet", 390);
                 // reward logic here -----------------------------
                 //
+                this.sound.play('chestie', {volume: 0.3});
                 this.chestBurst.setPosition(chestX, chestY);
                 this.chestBurst.start();
                 this.time.delayedCall(1000, () => {
@@ -223,6 +241,14 @@ class Trickbit extends Phaser.Scene {
         let currentAcceleration = onGround ? this.ACCELERATION : this.AIR_ACCELERATION;
         let currentDeceleration = onGround ? this.DECELERATION : this.AIR_DECELERATION;
 
+        // Footstep sound logic (only when moving on ground)
+        if (onGround && (cursors.left.isDown || cursors.right.isDown)) {
+            if (Math.abs(my.sprite.player.x - this.lastStepX) >= this.stepDistance) {
+                this.sound.play('walkie', { volume: 1 });
+                this.lastStepX = my.sprite.player.x;
+            }
+        }
+        // Movement logic
         if (cursors.left.isDown) {
             my.sprite.player.body.setAccelerationX(-currentAcceleration);
             my.sprite.player.setFlip(true, false);
@@ -233,7 +259,8 @@ class Trickbit extends Phaser.Scene {
             if (my.sprite.player.body.velocity.x < -this.MAX_SPEED) {
                 my.sprite.player.body.velocity.x = -this.MAX_SPEED;
             }
-        } else if (cursors.right.isDown) {
+        } 
+        else if (cursors.right.isDown) {
             my.sprite.player.body.setAccelerationX(currentAcceleration);
             my.sprite.player.resetFlip();
             my.sprite.player.anims.play('walk', true);
@@ -243,7 +270,8 @@ class Trickbit extends Phaser.Scene {
             if (my.sprite.player.body.velocity.x > this.MAX_SPEED) {
                 my.sprite.player.body.velocity.x = this.MAX_SPEED;
             }
-        } else {
+        } 
+        else {
             this.physics.world.collide(my.sprite.player, this.deathLayer);  
             my.sprite.player.body.setAccelerationX(0);
             my.sprite.player.body.setDragX(currentDeceleration);
@@ -254,12 +282,18 @@ class Trickbit extends Phaser.Scene {
         }
 
         // Jump handling
-        if(!my.sprite.player.body.blocked.down) {
+        if (my.sprite.player.body.blocked.down) {
+            // Player is on the ground
+            this.jumping.stop();
+            if (Phaser.Input.Keyboard.JustDown(cursors.up)) {
+                this.sound.play('jumpy', {volume: 0.2});
+                my.sprite.player.body.setVelocityY(this.JUMP_HEIGHT);
+                // Start particles when jumping
+                this.jumping.startFollow(my.sprite.player, 0, my.sprite.player.displayHeight / 2, false);
+                this.jumping.start();
+            }
+        } else {
             my.sprite.player.anims.play('jump');
-            this.walking.start();
-        }
-        if(my.sprite.player.body.blocked.down && Phaser.Input.Keyboard.JustDown(cursors.up)) {
-            my.sprite.player.body.setVelocityY(this.JUMP_HEIGHT);
         }
 
         if (cursors.left.isDown) {
