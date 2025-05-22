@@ -19,6 +19,7 @@ class Load extends Phaser.Scene {
         this.load.audio("jumpy", "audio/phaseJump3.ogg");
         this.load.audio("chestie", "audio/powerUp2.ogg");
         this.load.audio("keyyy", "audio/powerUp9.ogg");
+        this.load.audio("damage", "audio/zap2.ogg");
         this.load.audio("deaddd", "audio/phaserDown1.ogg");
 
         // Load tilemap information
