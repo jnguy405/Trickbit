@@ -8,7 +8,7 @@
     // Key collect logic (done)
     // platform "falling" logic 
     // key unlock door logic (done)
-    // audio for walking, jumping, opening chest, and dying
+    // audio for walking, jumping, opening chest, and dying (done)
     // create the end game scene
 
 // for funsies
@@ -44,6 +44,7 @@ class Trickbit extends Phaser.Scene {
 
         this.lastStepX = 0;          // Tracks the last X position where a step sound played
         this.stepDistance = 64;      // Play sound every 32 pixels
+        this.playerHealth = 100;
     }
 
     preload() {
@@ -88,6 +89,7 @@ class Trickbit extends Phaser.Scene {
         this.pipesLayer = this.map.createLayer("Pipes", this.tileset, 0, 0).setScale(scaleSize);
         this.miscLayer = this.map.createLayer("Misc", this.tileset, 0, 0).setScale(scaleSize);
         this.deathLayer = this.map.createLayer("Death", this.tileset, 0, 0).setScale(scaleSize);
+        this.enemyLayer = this.map.createLayer("Enemy", this.tileset, 0, 0).setScale(scaleSize);
 
         // Create game objects using the helper function
         this.keyobj = this.createGameObjects("Keys", "Key", 96);
@@ -100,6 +102,10 @@ class Trickbit extends Phaser.Scene {
         });
 
         this.deathLayer.setCollisionByProperty({
+            collides: true
+        });
+
+        this.enemyLayer.setCollisionByProperty({
             collides: true
         });
 
@@ -156,7 +162,7 @@ class Trickbit extends Phaser.Scene {
                 if (door.frame && door.frame.name !== 58) { 
                     door.setTexture("tilemap_sheet", 58);
                     this.time.delayedCall(500, () => {
-                        // this.scene.start('winScene');
+                        this.scene.start('winScene');
                     });
                 }
             } else {
@@ -181,6 +187,13 @@ class Trickbit extends Phaser.Scene {
                     });
                 }
             }
+        });
+
+        this.physics.add.collider(my.sprite.player, this.enemyLayer, (player, enemy) => {
+            this.enemyLayer.removeTileAt(enemy.x, enemy.y);
+            this.sound.play('damage', {volume: 0.2});
+            this.playerHealth -= 20;
+            console.log(this.playerHealth);
         });
 
         // chest particle logic 
