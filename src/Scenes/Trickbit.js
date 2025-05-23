@@ -2,19 +2,21 @@
 // TO-DO LIST 
     // Player Physics (done)
     // Camera movement (done)
-    // Canvas config (done, might tweak)
+    // Canvas config (done)
     // Spikes collision logic (done)
-    // Enemy collision logic (still deciding)
+    // Enemy collision logic (done)
     // Key collect logic (done)
     // platform "falling" logic 
     // key unlock door logic (done)
     // audio for walking, jumping, opening chest, and dying (done)
-    // create the end game scene
+    // create the end game scene and restart (done)
+    // health bar (health is currently console logged)
 
 // for funsies
     // funny bird killing animation (falls/dies upon overlap but doesn't infringe on the player's momentum/path)
     // level progress bar
     // key is being "held" by the player
+    // jump booster blocks
 // ----------------------------------------------------------------------------------------------------------------
 class Trickbit extends Phaser.Scene {
     constructor() {
@@ -26,13 +28,18 @@ class Trickbit extends Phaser.Scene {
         this.ACCELERATION = 4 * 100;    
         this.MAX_SPEED = 2 * 100;         
         this.DECELERATION = 100 * 100;    
-        this.JUMP_HEIGHT = -3 * 200;  
+        this.BASE_JUMP_HEIGHT = -3 * 200; 
+        this.BOOSTED_JUMP_HEIGHT = -6 * 200;
+        this.BOOST_DURATION = 2500; 
+        this.isJumpBoosted = false;
+        this.boostTimer = null;
+        this.JUMP_HEIGHT = this.BASE_JUMP_HEIGHT;
         this.DOWN_GRAVITY = 2 * 1000;    
         this.physics.world.gravity.y = this.DOWN_GRAVITY;
         this.AIR_ACCELERATION = this.ACCELERATION * 0.5; 
         this.AIR_DECELERATION = this.DECELERATION * 2; 
         this.PARTICLE_VELOCITY = 50;
-
+        
         // Camera Config
         this.targetZoom = 3;
         this.targetOffsetX = 0;
@@ -44,7 +51,9 @@ class Trickbit extends Phaser.Scene {
 
         this.lastStepX = 0;          // Tracks the last X position where a step sound played
         this.stepDistance = 64;      // Play sound every 32 pixels
+        
         this.playerHealth = 100;
+        this.coinsCollected = 0;
     }
 
     preload() {
@@ -76,6 +85,12 @@ class Trickbit extends Phaser.Scene {
         return objects;
     }
 
+    setCollision(layer) {
+        layer.setCollisionByProperty({
+            collides: true
+        });
+    }
+
     create() {
         // 16x16 tiles 160W 32H map (for scale = 2: 5120W 1024H px canvas (main.js))
         this.map = this.add.tilemap("Trickbit-level-1", 16, 16, 160, 32);
@@ -90,33 +105,26 @@ class Trickbit extends Phaser.Scene {
         this.miscLayer = this.map.createLayer("Misc", this.tileset, 0, 0).setScale(scaleSize);
         this.deathLayer = this.map.createLayer("Death", this.tileset, 0, 0).setScale(scaleSize);
         this.enemyLayer = this.map.createLayer("Enemy", this.tileset, 0, 0).setScale(scaleSize);
+        this.jumpBoosters = this.map.createLayer("Booster", this.tileset, 0, 0).setScale(scaleSize);
 
         // Create game objects using the helper function
         this.keyobj = this.createGameObjects("Keys", "Key", 96);
         this.door = this.createGameObjects("Doors", "door", 56);
         this.chests = this.createGameObjects("Chests", "chest", 389);
 
-        // Make base collidable
-        this.baseLayer.setCollisionByProperty({
-            collides: true
-        });
+        // Collision Properties
+        this.setCollision(this.baseLayer);
+        this.setCollision(this.deathLayer);
+        this.setCollision(this.enemyLayer);
+        this.setCollision(this.jumpBoosters);
 
-        this.deathLayer.setCollisionByProperty({
-            collides: true
-        });
-
-        this.enemyLayer.setCollisionByProperty({
-            collides: true
-        });
-
-        // Player config ----------
+        // Player Configuration
         my.sprite.player = this.physics.add.sprite(0, game.config.height/2, "tile_0240.png").setScale(SCALE);
         my.sprite.player.setCollideWorldBounds(true); 
-
-        // Configure the collision box size  
         my.sprite.player.body.setSize(12, 16).setOffset(2, 0);
 
-        // Player Movement Particles
+        // Player Particles
+        // Walking
         this.walking = this.add.particles(0, 0, "kenny-particles", {
             frame: ['magic_01.png', 'magic_02.png'],
             scale: {start: 0.01, end: 0.05, random: true},
@@ -125,7 +133,7 @@ class Trickbit extends Phaser.Scene {
         });
         this.walking.stop();
 
-        // Player Jumping Particles
+        // Jumping
         this.jumping = this.add.particles(0, 0, 'kenny-particles', {
             frame: ['twirl_01.png', 'twirl_02.png'],
             scale: { start: 0.01, end: 0.1 },
@@ -139,23 +147,24 @@ class Trickbit extends Phaser.Scene {
         });
         this.jumping.stop();
 
-        // Collision handling
+        // Base Collision
         this.physics.add.collider(my.sprite.player, this.baseLayer);
 
+        // Spikes/Void Collision
         this.physics.add.collider(my.sprite.player, this.deathLayer, () => {
             this.sound.play('deaddd', {volume: 0.5});
             this.scene.restart();
         });
 
+        // Key Collision
         this.keyCollected = false;
-        // Collect key when player comes in contact
         this.physics.add.overlap(my.sprite.player, this.keyobj, (obj1, obj2) => {
             this.sound.play('keyyy', {volume: 0.3});
             obj2.destroy();
             this.keyCollected = true;
         });
 
-        // Door and Key logic
+        // Door and Key Logic
         this.physics.add.collider(my.sprite.player, this.door, (player, door) => {
             if (this.keyCollected) {
                 // Key collected, change door frame
@@ -172,7 +181,7 @@ class Trickbit extends Phaser.Scene {
                         player.x, 
                         player.y - 30, 
                         "Key needed!", 
-                        { font: '16px Arial', fill: '#ffffff' }
+                        { font: '16px Play', fill: '#ffffff' }
                     ).setOrigin(0.5);
                     
                     this.time.addEvent({
@@ -189,14 +198,56 @@ class Trickbit extends Phaser.Scene {
             }
         });
 
+        // Enemy Collision
         this.physics.add.collider(my.sprite.player, this.enemyLayer, (player, enemy) => {
             this.enemyLayer.removeTileAt(enemy.x, enemy.y);
             this.sound.play('damage', {volume: 0.2});
-            this.playerHealth -= 20;
-            console.log(this.playerHealth);
+            this.playerHealth = this.playerHealth - 20;
+            this.playerHealth = Math.max(0, this.playerHealth);
+            
+            // Create health text
+            const healthText = this.add.text(
+                player.x, 
+                player.y - 30, 
+                `${this.playerHealth}/100`, 
+                { 
+                    font: '16px Play', 
+                    fill: this.playerHealth < 30 ? '#FF0000' : '#FFFFFF', // Red or White
+                    stroke: '#000000',
+                    strokeThickness: 4,
+                    fontWeight: 'bold'
+                }
+            ).setOrigin(0.5).setScale(0.5);
+            
+            // Animation sequence
+            this.tweens.add({
+                targets: healthText,
+                scaleX: 1.2,
+                scaleY: 1.2,
+                y: player.y - 60,
+                duration: 200,
+                ease: 'Back.easeOut',
+                yoyo: true,
+                onComplete: () => {
+                    // Then float up and fade
+                    this.tweens.add({
+                        targets: healthText,
+                        y: healthText.y - 40,
+                        alpha: 0,
+                        duration: 800,
+                        onComplete: () => healthText.destroy()
+                    });
+                }
+            });
+            
+            // Check for player death
+            if (this.playerHealth <= 0) {
+                this.sound.play('deaddd', {volume: 0.5});
+                this.scene.restart();
+            }
         });
 
-        // chest particle logic 
+        // Chest Particles and Collision
         this.chestBurst = this.add.particles(0, 0, 'kenny-particles', {
             frame: ['star_08.png'],
             lifespan: 200,
@@ -215,14 +266,60 @@ class Trickbit extends Phaser.Scene {
             const chestY = chest.y;
             if (chest.frame && chest.frame.name !== 390) { 
                 chest.setTexture("tilemap_sheet", 390);
-                // reward logic here -----------------------------
-                //
+                
+                // Play sound and particles
                 this.sound.play('chestie', {volume: 0.3});
+                this.coinsCollected += 1;
+                console.log(this.coinsCollected);
                 this.chestBurst.setPosition(chestX, chestY);
                 this.chestBurst.start();
+                
+                // Create +1 text
+                const plusOneText = this.add.text(
+                    chestX, 
+                    chestY - 40,
+                    "+1", 
+                    { 
+                        font: '16px Play', 
+                        fill: '#FFFFFF',
+                        stroke: '#000000',
+                        strokeThickness: 2
+                    }
+                ).setOrigin(0.5);
+                
+                // Animate the text
+                this.tweens.add({
+                    targets: plusOneText,
+                    y: chestY - 80,  
+                    alpha: 0,     
+                    duration: 1000,
+                    ease: 'Power1',
+                    onComplete: () => {
+                        plusOneText.destroy();
+                    }
+                });
+                
                 this.time.delayedCall(1000, () => {
                     chest.destroy();
                     this.chestBurst.stop();
+                });
+            }
+        });
+
+        // Jump Boost Collision
+        this.physics.add.collider(my.sprite.player, this.jumpBoosters, (player, booster) => {
+            if (!this.isJumpBoosted) {
+                // Apply jump boost
+                this.JUMP_HEIGHT = this.BOOSTED_JUMP_HEIGHT;
+                this.isJumpBoosted = true;
+                this.ACCELERATION = this.ACCELERATION * 0.5;
+                this.targetZoom = 2.5;
+                // Set timer to return to normal jump
+                this.boostTimer = this.time.delayedCall(this.BOOST_DURATION, () => {
+                    this.JUMP_HEIGHT = this.BASE_JUMP_HEIGHT;
+                    this.ACCELERATION = this.ACCELERATION * 2;
+                    this.targetZoom = 3;
+                    this.isJumpBoosted = false;
                 });
             }
         });
@@ -326,8 +423,26 @@ class Trickbit extends Phaser.Scene {
 
         // Smooth Zoom / Camera
         this.cameras.main.setFollowOffset(this.currentOffsetX, 0);
-        const currentZoom = this.cameras.main.zoom;
-        const zoomSpeed = 0.001;
-        this.cameras.main.setZoom(Phaser.Math.Linear(currentZoom, this.targetZoom, zoomSpeed));
+        
+        // Calculate zoom speed based on current state
+        let zoomSpeed;
+        if (this.isJumpBoosted) {
+            // When boosted, use slow zoom out
+            zoomSpeed = 0.003;
+        } else {
+            // When not boosted, check if we're zooming back in
+            const currentZoom = this.cameras.main.zoom;
+            const zoomDifference = Math.abs(currentZoom - this.targetZoom);
+            
+            if (zoomDifference > 0.1) {
+                // If far from target, zoom quickly
+                zoomSpeed = 0.05; // Fast zoom in
+            } else {
+                // When close to target, slow down
+                zoomSpeed = 0.001; // Slow final approach
+            }
+        }
+        
+        this.cameras.main.setZoom(Phaser.Math.Linear(this.cameras.main.zoom, this.targetZoom, zoomSpeed));
     }
 }
