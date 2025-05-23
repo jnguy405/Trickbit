@@ -108,6 +108,7 @@ class Trickbit extends Phaser.Scene {
         this.jumpBoosters = this.map.createLayer("Booster", this.tileset, 0, 0).setScale(scaleSize);
 
         // Create game objects using the helper function
+        this.guideblock = this.createGameObjects("Guide", "guide", 27);
         this.keyobj = this.createGameObjects("Keys", "Key", 96);
         this.door = this.createGameObjects("Doors", "door", 56);
         this.chests = this.createGameObjects("Chests", "chest", 389);
@@ -149,6 +150,52 @@ class Trickbit extends Phaser.Scene {
 
         // Base Collision
         this.physics.add.collider(my.sprite.player, this.baseLayer);
+
+        // Guide Collision
+        this.physics.add.collider(my.sprite.player, this.guideblock, (player, block) => {
+            if (block.frame && block.frame.name === 27) {
+                // Change block texture
+                block.setTexture("tilemap_sheet", 7);
+            };    
+            const guideText = this.add.text(
+                block.x, 
+                block.y - 50, 
+                'Find the key to unlock the door!', 
+                { 
+                    font: '16px Play', 
+                    fill: '#FFFFFF',
+                    stroke: '#000000',
+                    strokeThickness: 2,
+                    fontWeight: 'bold',
+                    alpha: 0
+                }
+            ).setOrigin(0.5).setScale(0.5);
+            
+            // Animation sequence
+            this.tweens.add({
+                targets: guideText,
+                alpha: 1,  // Fade in
+                scaleX: 1,
+                scaleY: 1,
+                x: block.x + 50,
+                y: block.y - 40,
+                duration: 500,
+                ease: 'Back.easeOut',
+                onComplete: () => {
+                    // After appearing, wait 3 seconds then fade out
+                    this.time.delayedCall(3000, () => {
+                        block.setTexture("tilemap_sheet", 27);
+                        this.tweens.add({
+                            targets: guideText,
+                            alpha: 0,
+                            y: guideText.y - 40,
+                            duration: 1000,
+                            onComplete: () => guideText.destroy()
+                        });
+                    });
+                }
+            });
+        });
 
         // Spikes/Void Collision
         this.physics.add.collider(my.sprite.player, this.deathLayer, () => {
