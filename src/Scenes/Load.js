@@ -22,6 +22,7 @@ class Load extends Phaser.Scene {
         this.load.audio("damage", "audio/zap2.ogg");
         this.load.audio("deaddd", "audio/phaserDown1.ogg");
         this.load.audio("switch", "audio/switch3.ogg");
+        this.load.audio("boosted", "audio/threeTone1.ogg");
 
         // Load tilemap information
         this.load.image("tilemap_tiles", "monochrome_tilemap_packed.png");          // Packed tilemap
