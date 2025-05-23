@@ -358,6 +358,31 @@ class Trickbit extends Phaser.Scene {
         this.physics.add.collider(my.sprite.player, this.jumpBoosters, (player, booster) => {
             if (!this.isJumpBoosted) {
                 // Apply jump boost
+                this.sound.play('boosted', {volume: 0.1});
+                // Create +1 text
+                const boostText = this.add.text(
+                    player.x, 
+                    player.y - 40,
+                    "uppies!", 
+                    { 
+                        font: '16px Play', 
+                        fill: '#FFFFFF',
+                        stroke: '#000000',
+                        strokeThickness: 2
+                    }
+                ).setOrigin(0.5);
+                
+                // Animate the text
+                this.tweens.add({
+                    targets: boostText,
+                    y: player.y - 80,  
+                    alpha: 0,     
+                    duration: 1000,
+                    ease: 'Power1',
+                    onComplete: () => {
+                        boostText.destroy();
+                    }
+                });
                 this.JUMP_HEIGHT = this.BOOSTED_JUMP_HEIGHT;
                 this.isJumpBoosted = true;
                 this.ACCELERATION = this.ACCELERATION * 0.5;
