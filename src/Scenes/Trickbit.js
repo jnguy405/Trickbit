@@ -157,6 +157,7 @@ class Trickbit extends Phaser.Scene {
                 // Change block texture
                 block.setTexture("tilemap_sheet", 7);
             };    
+            this.sound.play('switch');
             const guideText = this.add.text(
                 block.x, 
                 block.y - 50, 
@@ -401,7 +402,7 @@ class Trickbit extends Phaser.Scene {
         // Footstep sound logic (only when moving on ground)
         if (onGround && (cursors.left.isDown || cursors.right.isDown)) {
             if (Math.abs(my.sprite.player.x - this.lastStepX) >= this.stepDistance) {
-                this.sound.play('walkie', { volume: 1 });
+                this.sound.play('walkie', { volume: 1.5 });
                 this.lastStepX = my.sprite.player.x;
             }
         }
@@ -443,7 +444,7 @@ class Trickbit extends Phaser.Scene {
             // Player is on the ground
             this.jumping.stop();
             if (Phaser.Input.Keyboard.JustDown(cursors.up)) {
-                this.sound.play('jumpy', {volume: 0.2});
+                this.sound.play('jumpy', {volume: 0.1});
                 my.sprite.player.body.setVelocityY(this.JUMP_HEIGHT);
                 // Start particles when jumping
                 this.jumping.startFollow(my.sprite.player, 0, my.sprite.player.displayHeight / 2, false);
