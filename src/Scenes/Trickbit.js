@@ -407,15 +407,6 @@ class Trickbit extends Phaser.Scene {
         // Key input
         // set up Phaser-provided cursor key input
         cursors = this.input.keyboard.createCursorKeys();
-
-        // debug key listener (assigned to D key)
-        this.input.keyboard.on('keydown-D', () => {
-            this.physics.world.drawDebug = this.physics.world.drawDebug ? false : true
-            this.physics.world.debugGraphic.clear()
-        }, this);
-
-        // Scene Plug-In
-        this.animatedTiles.init(this.map);
     }
 
     update() {
