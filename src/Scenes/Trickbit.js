@@ -1,4 +1,5 @@
 // ----------------------------------------------------------------------------------------------------------------
+// Jenalee Nguyen jnguy405@ucsc.edu CMPM120 2-D Platformer
 // TO-DO LIST 
     // Player Physics (done)
     // Camera movement (done)
@@ -10,13 +11,12 @@
     // key unlock door logic (done)
     // audio for walking, jumping, opening chest, and dying (done)
     // create the end game scene and restart (done)
-    // health bar (health is currently console logged)
+    // health display (done)
 
 // for funsies
     // funny bird killing animation (falls/dies upon overlap but doesn't infringe on the player's momentum/path)
-    // level progress bar
     // key is being "held" by the player
-    // jump booster blocks
+    // jump booster blocks (done)
 // ----------------------------------------------------------------------------------------------------------------
 class Trickbit extends Phaser.Scene {
     constructor() {
@@ -490,7 +490,6 @@ class Trickbit extends Phaser.Scene {
                 zoomSpeed = 0.001; // Slow final approach
             }
         }
-        
         this.cameras.main.setZoom(Phaser.Math.Linear(this.cameras.main.zoom, this.targetZoom, zoomSpeed));
     }
 }
