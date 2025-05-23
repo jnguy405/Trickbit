@@ -218,6 +218,7 @@ class Trickbit extends Phaser.Scene {
                 // Key collected, change door frame
                 if (door.frame && door.frame.name !== 58) { 
                     door.setTexture("tilemap_sheet", 58);
+                    this.sound.play("doorOpen");
                     this.time.delayedCall(500, () => {
                         this.scene.start('winScene');
                     });
