@@ -28,16 +28,16 @@ class Trickbit extends Phaser.Scene {
         this.ACCELERATION = 4 * 100;    
         this.MAX_SPEED = 2 * 100;         
         this.DECELERATION = 100 * 100;    
+        this.AIR_ACCELERATION = this.ACCELERATION * 0.5; 
+        this.AIR_DECELERATION = this.DECELERATION * 2; 
+        this.DOWN_GRAVITY = 2 * 1000;    
+        this.physics.world.gravity.y = this.DOWN_GRAVITY;
         this.BASE_JUMP_HEIGHT = -3 * 200; 
         this.BOOSTED_JUMP_HEIGHT = -6 * 200;
         this.BOOST_DURATION = 2500; 
         this.isJumpBoosted = false;
         this.boostTimer = null;
         this.JUMP_HEIGHT = this.BASE_JUMP_HEIGHT;
-        this.DOWN_GRAVITY = 2 * 1000;    
-        this.physics.world.gravity.y = this.DOWN_GRAVITY;
-        this.AIR_ACCELERATION = this.ACCELERATION * 0.5; 
-        this.AIR_DECELERATION = this.DECELERATION * 2; 
         this.PARTICLE_VELOCITY = 50;
         
         // Camera Config
