@@ -15,6 +15,10 @@ class Load extends Phaser.Scene {
         this.load.image("tile_0244.png", "tile_0244.png");
         this.load.image("tile_0245.png", "tile_0245.png");
         this.load.image("tile_0246.png", "tile_0246.png");
+        this.load.image("tile_0340.png", "tile_0340.png");
+        this.load.image("tile_0341.png", "tile_0341.png");
+        this.load.image("tile_0342.png", "tile_0342.png");
+        // Audio
         this.load.audio("walkie", "audio/Grass_hit4.ogg");
         this.load.audio("jumpy", "audio/phaseJump3.ogg");
         this.load.audio("chestie", "audio/powerUp2.ogg");
@@ -28,6 +32,8 @@ class Load extends Phaser.Scene {
         // Load tilemap information
         this.load.image("tilemap_tiles", "monochrome_tilemap_packed.png");          // Packed tilemap
         this.load.tilemapTiledJSON("Trickbit-level-1", "Trickbit-level-1.tmj");     // Tilemap in JSON
+        this.load.tilemapTiledJSON("Trickbit-level-2", "Trickbit-level-2.tmj");
+        this.load.tilemapTiledJSON("Trickbit-level-3", "Trickbit-level-3.tmj");
         this.load.spritesheet("tilemap_sheet", "monochrome_tilemap_packed.png", {
             frameWidth: 16,
             frameHeight: 16
@@ -36,6 +42,7 @@ class Load extends Phaser.Scene {
     }
 
     create() {
+        // Player Animation
         this.anims.create({
             key: 'walk',
             frames: [
@@ -61,8 +68,27 @@ class Load extends Phaser.Scene {
                 { key: "tile_0244.png" }
             ]
         });
-         // ...and pass to the next Scene
-         this.scene.start("trickbitScene");
+
+        // Enemy Animation
+        this.anims.create({
+            key: 'scurry',
+            frames: [
+                { key: "tile_0341.png" },
+                { key: "tile_0342.png" },
+            ],
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'still',
+            frames: [
+                { key: "tile_0340.png" },
+            ],
+            repeat: -1
+        });
+        
+        this.scene.start("titleScreen");
     }
 
     update() {

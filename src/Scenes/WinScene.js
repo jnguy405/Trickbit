@@ -1,3 +1,6 @@
+// WinScene.js
+// Win screen with winner message
+
 class WinScene extends Phaser.Scene {
     constructor() {
         super("winScene");
@@ -21,7 +24,7 @@ class WinScene extends Phaser.Scene {
             {
                 fontFamily: 'Play',
                 fontSize: '128px',
-                color: '#ffffff',
+                color: '#ff0000',
                 stroke: '#000000',
                 strokeThickness: 8
             }
@@ -31,7 +34,7 @@ class WinScene extends Phaser.Scene {
         this.instructionText = this.add.text(
             this.cameras.main.centerX,
             this.cameras.main.centerY + 80,
-            'Press R to restart',
+            'Press R to return to Main Menu',
             {
                 fontFamily: 'Play',
                 fontSize: '64px',
@@ -57,7 +60,7 @@ class WinScene extends Phaser.Scene {
         
         // Set up restart input
         this.input.keyboard.on('keydown-R', () => {
-            this.scene.start('trickbitScene');
+            this.scene.start('titleScreen');
         });
     }
 }
